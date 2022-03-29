@@ -25,13 +25,10 @@ for i = 10:10
     cb_curr_sub = curr_frame(1:2:144,1:2:176, 2);
     cr_curr_sub = curr_frame(1:2:144,1:2:176, 3);
     
-    sad = zeros(1, 289);
-    i = 1;
-    
     %%%Iterate through the macroblocks
     for n = 16:16:144
         for m = 16:16:176
-%             mb_ref = y_ref(n-15:n, m-15:m);
+            i = 1; % SAD array index
             mb_curr = y_curr(n-15:n, m-15:m);
             
             %%%Search window rows and cols
@@ -57,14 +54,17 @@ for i = 10:10
                 end_col = 176;
             end
             
-            for row = start_row:end_row-16
-                for col = start_col:end_col-16
-                    mb_ref = y_ref(row:row+15,col:col+15);
+            sad = zeros(1, 1);
+            for row = start_row+15:end_row
+                for col = start_col+15:end_col
+                    %%%Calculate SAD
+                    mb_ref = y_ref(row-15:row,col-15:col);
                     sad(i) = abs(sum(sum(mb_ref-mb_curr)));
                     i = i+1;
                 end
             end
-            i = 0;
+            
+            min(sad)
             
         end
     end
