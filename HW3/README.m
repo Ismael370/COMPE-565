@@ -9,7 +9,7 @@ clc, clear
 
 video = VideoReader('football_qcif.avi');
 
-for i = 10:10
+for i = 10:14
     ref_frame = read(video,i);
     curr_frame = read(video, i+1);
     
@@ -25,10 +25,14 @@ for i = 10:10
     cb_curr_sub = curr_frame(1:2:144,1:2:176, 2);
     cr_curr_sub = curr_frame(1:2:144,1:2:176, 3);
     
+    y_predicted = uint8(zeros(144, 176));
+    
     %%%Iterate through the macroblocks
     for n = 16:16:144
         for m = 16:16:176
-            i = 1; % SAD array index
+            min_sad = 999999;
+            bm_row = 1;% Best macth ending row
+            bm_col = 1; % Best macth ending col
             mb_curr = y_curr(n-15:n, m-15:m);
             
             %%%Search window rows and cols
@@ -54,19 +58,25 @@ for i = 10:10
                 end_col = 176;
             end
             
-            sad = zeros(1, 1);
+            %%%Search each macroblock in the window
             for row = start_row+15:end_row
                 for col = start_col+15:end_col
                     %%%Calculate SAD
                     mb_ref = y_ref(row-15:row,col-15:col);
-                    sad(i) = abs(sum(sum(mb_ref-mb_curr)));
-                    i = i+1;
+                    sad = abs(sum(sum(mb_ref-mb_curr)));
+                    
+                    if sad < min_sad
+                        min_sad = sad;
+                        bm_row = row;
+                        bm_col = col;
+                    end
                 end
             end
             
-            min(sad)
-            
+            %%%Reconstruct predicted frame
+            y_predicted(n-15:n, m-15:m) = y_ref(bm_row-15:bm_row, bm_col-15:bm_col); 
         end
     end
+    figure, subimage(y_predicted);
 end
 
