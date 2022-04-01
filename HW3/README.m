@@ -9,7 +9,7 @@ clc, clear
 
 video = VideoReader('football_qcif.avi');
 
-for i = 10:14
+for i = 10:13
     ref_frame = read(video,i);
     curr_frame = read(video, i+1);
     
@@ -77,6 +77,14 @@ for i = 10:14
             y_predicted(n-15:n, m-15:m) = y_ref(bm_row-15:bm_row, bm_col-15:bm_col); 
         end
     end
-    figure, subimage(y_predicted);
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Display the error and reconstrcuted video frames
+    % M-file name: README.m
+    % Output: Figures 1-4
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    y_diff = y_curr - y_predicted;
+    figure, subplot(1, 2, 1), subimage(y_predicted), title('Predicted frame');
+    subplot(1, 2, 2), subimage(y_diff), title('Difference frame');
 end
 
