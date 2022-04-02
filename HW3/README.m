@@ -27,6 +27,10 @@ for i = 10:13
     
     y_predicted = uint8(zeros(144, 176));
     
+    %create array to hold motion vectors of this frame and empty
+    motionVectors = zeros(1,4);
+    motionVectors(:,:) = [];
+    
     %%%Iterate through the macroblocks
     for n = 16:16:144
         for m = 16:16:176
@@ -72,19 +76,24 @@ for i = 10:13
                     end
                 end
             end
+            %append reference point and each motion vector 
+            motionVectors = [motionVectors;row,col,bm_row,bm_col];
             
             %%%Reconstruct predicted frame
-            y_predicted(n-15:n, m-15:m) = y_ref(bm_row-15:bm_row, bm_col-15:bm_col); 
+            y_predicted(n-15:n, m-15:m) = y_ref(bm_row-15:bm_row, ...
+                bm_col-15:bm_col); 
         end
     end
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Display the error and reconstrcuted video frames
     % M-file name: README.m
     % Output: Figures 1-4
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     y_diff = y_curr - y_predicted;
-    figure, subplot(1, 2, 1), subimage(y_predicted), title('Predicted frame');
-    subplot(1, 2, 2), subimage(y_diff), title('Difference frame');
+    figure, subplot(2,2, 1), imshow(y_predicted), title('Predicted frame');
+    subplot(2, 2, 2), imshow(y_diff), title('Difference frame');
+    subplot(2,2,[3,4]), quiver(motionVectors(:,1),motionVectors(:,2), ...
+        motionVectors(:,3),motionVectors(:,4)),title('Motion Vectors');
+    
 end
-
