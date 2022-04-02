@@ -32,61 +32,63 @@ for i = 10:13
     motionVectors(:,:) = [];
     
     %%%Iterate through the macroblocks
-    for n = 16:16:144
-        for m = 16:16:176
+    for mb_row = 16:16:144
+        for mb_col = 16:16:176
             min_sad = 999999;
             bm_row = 1;% Best macth ending row
             bm_col = 1; % Best macth ending col
-            mb_curr = y_curr(n-15:n, m-15:m);
+            mb_curr = y_curr(mb_row-15:mb_row, mb_col-15:mb_col);
             
             %%%Search window rows and cols
-            start_row = n-23;
-            end_row = n+8;
-            start_col = m-23;
-            end_col = m+8;
+            start_row = mb_row-23;
+            end_row = mb_row+8;
+            start_col = mb_col-23;
+            end_col = mb_col+8;
             
             %%%Handle edge cases
-            if n == 16
+            if mb_row == 16
                 start_row = 1;
             end
             
-            if n == 144
+            if mb_row == 144
                 end_row = 144;
             end
             
-            if m == 16
+            if mb_col == 16
                 start_col = 1;
             end
             
-            if m == 176
+            if mb_col == 176
                 end_col = 176;
             end
             
             %%%Search each macroblock in the window
-            for row = start_row+15:end_row
-                for col = start_col+15:end_col
+            for sw_row = start_row+15:end_row
+                for sw_col = start_col+15:end_col
                     %%%Calculate SAD
-                    mb_ref = y_ref(row-15:row,col-15:col);
+                    mb_ref = y_ref(sw_row-15:sw_row,sw_col-15:sw_col);
                     sad = abs(sum(sum(mb_ref-mb_curr)));
                     
                     if sad < min_sad
                         min_sad = sad;
-                        bm_row = row;
-                        bm_col = col;
+                        bm_row = sw_row;
+                        bm_col = sw_col;
                     end
                 end
             end
+            
             %append reference point and each motion vector 
-            motionVectors = [motionVectors;row,col,bm_row,bm_col];
+            motionVectors = [motionVectors;mb_row,mb_col,bm_row,bm_col];
             
             %%%Reconstruct predicted frame
-            y_predicted(n-15:n, m-15:m) = y_ref(bm_row-15:bm_row, ...
+            y_predicted(mb_row-15:mb_row, mb_col-15:mb_col) = y_ref(bm_row-15:bm_row, ...
                 bm_col-15:bm_col); 
         end
     end
-
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Display the error and reconstrcuted video frames
+    % Display the error, reconstrcuted video frames and
+    % motion vectors
     % M-file name: README.m
     % Output: Figures 1-4
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
