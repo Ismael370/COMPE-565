@@ -16,7 +16,7 @@ for i = 10:13
     ref_frame = rgb2ycbcr(ref_frame);
     curr_frame = rgb2ycbcr(curr_frame);
     
-    %%%Separate the ycbcr channels
+    %%%Separate the ycbcr channels in 4:2:0
     y_ref = ref_frame(:,:,1);
     cb_ref_sub = ref_frame(1:2:144,1:2:176, 2);
     cr_ref_sub = ref_frame(1:2:144,1:2:176, 3);
@@ -97,5 +97,31 @@ for i = 10:13
     subplot(2, 2, 2), imshow(y_diff), title('Difference frame');
     subplot(2,2,[3,4]), quiver(motionVectors(:,1),motionVectors(:,2), ...
         motionVectors(:,3),motionVectors(:,4)),title('Motion Vectors');
+        
+    %%%DCT on residual frame
+    y_diff_decoded = zeros(144, 176);
+    y_decoded = zeros(144, 176);
+        
+    for x = 1:8:144
+        for y = 1:8:176
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Encoder
+            % M-file name: dct.m, README.m
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            y_dct = dct(y_diff(x:x+7, y:y+7));
+            y_quant = round(y_dct/28);
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Decoder
+            % M-file name: inv_dct.m, README.m
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            y_quant_inv = y_quant*28;
+            y_dct_inv = inv_dct(y_quant_inv);
+            
+            y_diff_decoded(x:x+7, y:y+7) = y_dct_inv;
+        end
+    end
+    
+    y_decoded = uint8(y_diff_decoded) + y_predicted;
     
 end
