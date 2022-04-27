@@ -86,22 +86,14 @@ for i = 10:13
         end
     end
     
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Display the error, reconstrcuted video frames and
-    % motion vectors
-    % M-file name: README.m
-    % Output: Figures 1-4
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%Calculate difference frame
     y_diff = y_curr - y_predicted;
-    figure, subplot(2,2, 1), imshow(y_predicted), title('Predicted frame');
-    subplot(2, 2, 2), imshow(y_diff), title('Difference frame');
-    subplot(2,2,[3,4]), quiver(motionVectors(:,1),motionVectors(:,2), ...
-        motionVectors(:,3),motionVectors(:,4)),title('Motion Vectors');
         
-    %%%DCT on residual frame
+    %%%DCT on difference frame
     y_diff_decoded = zeros(144, 176);
     y_decoded = zeros(144, 176);
-        
+    
+    %%%Y-channel
     for x = 1:8:144
         for y = 1:8:176
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -124,4 +116,56 @@ for i = 10:13
     
     y_decoded = uint8(y_diff_decoded) + y_predicted;
     
+    %%%DCT on Cb and Cr channels
+    cb_sub_decoded = zeros(72, 88);
+    cr_sub_decoded = zeros(72, 88);
+    
+    cb_decoded = zeros(144, 176);
+    cr_decoded = zeros(144, 176);
+    
+    for x = 1:8:72
+        for y = 1:8:88
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Encoder
+            % M-file name: dct.m, README.m
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            cb_dct = dct(cb_curr_sub(x:x+7, y:y+7));
+            cr_dct = dct(cr_curr_sub(x:x+7, y:y+7));
+
+            cb_quant = round(cb_dct/28);
+            cr_quant = round(cr_dct/28);
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Decoder
+            % M-file name: inv_dct.m, README.m
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            cb_quant_inv = cb_quant*28;
+            cr_quant_inv = cr_quant*28;
+            
+            cb_dct_inv = inv_dct(cb_quant_inv);
+            cr_dct_inv = inv_dct(cr_quant_inv);
+            
+            cb_sub_decoded(x:x+7, y:y+7) = cb_dct_inv;
+            cr_sub_decoded(x:x+7, y:y+7) = cr_dct_inv;
+        end
+    end
+    
+    %%%Upsample Cb and Cr using replication
+    cb_decoded(1:2:144, 1:2:176) = cb_sub_decoded(:, :);
+    cb_decoded(2:2:144, :) = cb_decoded(1:2:144, :);
+    cb_decoded(:, 2:2:176) = cb_decoded(:, 1:2:176);
+    cb_decoded = cb_decoded;
+    
+    cr_decoded(1:2:144, 1:2:176) = cr_sub_decoded(:, :);
+    cr_decoded(2:2:144, :) = cr_decoded(1:2:144, :);
+    cr_decoded(:, 2:2:176) = cr_decoded(:, 1:2:176);
+    cr_decoded = cr_decoded;
+    
+    %%%Get RGB frames
+    ycbcr_decoded = cat(3, y_decoded, cb_decoded, cr_decoded);
+    rgb_decoded = ycbcr2rgb(ycbcr_decoded);
+    
+    %%%Display difference frame and reconstructed frame
+    figure, subplot(1, 2, 1), subimage(y_diff_decoded), title('Decoded Difference frame');
+    subplot(1, 2, 2), subimage(rgb_decoded), title('Reconstructed frames');
 end
