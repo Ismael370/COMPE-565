@@ -12,17 +12,10 @@ video = VideoReader('football_qcif.avi');
 y_ref = zeros(144, 176);
 
 for i = 10:14
-%     ref_frame = read(video,i);
     curr_frame = read(video, i);
-%     
-%     ref_frame = rgb2ycbcr(ref_frame);
     curr_frame = rgb2ycbcr(curr_frame);
     
     %%%Separate the ycbcr channels in 4:2:0
-%     y_ref = ref_frame(:,:,1);
-%     cb_ref_sub = ref_frame(1:2:144,1:2:176, 2);
-%     cr_ref_sub = ref_frame(1:2:144,1:2:176, 3);
-    
     y_curr = curr_frame(:,:,1);
     cb_curr_sub = curr_frame(1:2:144,1:2:176, 2);
     cr_curr_sub = curr_frame(1:2:144,1:2:176, 3);
@@ -87,8 +80,8 @@ for i = 10:14
     end
         
     %%%DCT on difference frame
-    y_diff_decoded = zeros(144, 176);
-    y_decoded = zeros(144, 176);
+    y_diff_decoded = uint8(zeros(144, 176));
+    y_decoded = uint8(zeros(144, 176));
     
     %%%Y-channel
     for x = 1:8:144
@@ -118,17 +111,18 @@ for i = 10:14
     end
     
     if(i > 10)
-        y_decoded = uint8(y_diff_decoded) + y_predicted;
+        y_decoded = y_diff_decoded + y_predicted;
     else
-        y_decoded = uint8(y_diff_decoded);
+        y_decoded = y_diff_decoded;
+        y_diff_decoded = zeros(144, 176);
     end
     
     %%%DCT on Cb and Cr channels
-    cb_sub_decoded = zeros(72, 88);
-    cr_sub_decoded = zeros(72, 88);
+    cb_sub_decoded = uint8(zeros(72, 88));
+    cr_sub_decoded = uint8(zeros(72, 88));
     
-    cb_decoded = zeros(144, 176);
-    cr_decoded = zeros(144, 176);
+    cb_decoded = uint8(zeros(144, 176));
+    cr_decoded = uint8(zeros(144, 176));
     
     for x = 1:8:72
         for y = 1:8:88
