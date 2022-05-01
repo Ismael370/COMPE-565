@@ -97,7 +97,6 @@ for i = 10:14
             end
             
             y_quant = round(y_dct/28);
- 
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Decoder
@@ -152,7 +151,7 @@ for i = 10:14
     end
     
     %%%Store frame
-    y_ref = y_curr;
+    y_ref = y_decoded;
     
     %%%Upsample Cb and Cr using replication
     cb_decoded(1:2:144, 1:2:176) = cb_sub_decoded(:, :);
