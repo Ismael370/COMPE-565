@@ -167,8 +167,10 @@ for i = 10:14
     %%%Get RGB frames
     ycbcr_decoded = cat(3, y_decoded, cb_decoded, cr_decoded);
     rgb_decoded = ycbcr2rgb(ycbcr_decoded);
+    curr_frame = ycbcr2rgb(curr_frame);
     
     %%%Display difference frame and reconstructed frame
-    figure, subplot(1, 2, 1), subimage(y_diff_decoded), title('Decoded Difference frame');
-    subplot(1, 2, 2), subimage(rgb_decoded), title('Reconstructed frames');
+    figure, subplot(2, 2, 1), subimage(curr_frame), title('Original frame');
+    subplot(2, 2, 2), subimage(rgb_decoded), title('Reconstructed frame');
+    subplot(2, 2, 3), subimage(y_diff_decoded), title('Decoded Difference frame')
 end
